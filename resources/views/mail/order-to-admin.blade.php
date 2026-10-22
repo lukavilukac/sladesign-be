@@ -25,7 +25,7 @@
 <p>Stan/sprat: {{$order->shipping->apartment}}</p>
 
 <p>Detalji:</p>
-<p>{{env('APP_URL') . '/admin/orders'}}</p>
+<p><a href="{{ route('admin.orders.show', ['id' => $order->id]) }}">Pogledaj porudžbinu #{{ $order->id }}</a></p>
 
 <!-- Tabela sa Proizvodima -->
 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
