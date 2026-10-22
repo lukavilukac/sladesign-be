@@ -79,7 +79,7 @@ class OrderService
             }
             DB::commit();
             //send email to slavica and me!
-            Mail::to(env('MAIL_USERNAME'))->send(new OrderToAdmin($order, $user));
+            Mail::to(config('mail.admin_address'))->send(new OrderToAdmin($order, $user));
             //send email to user!
             Mail::to($user->email)->send(new OrderConfirmation($order, $user));
         } catch (\Exception $exception) {

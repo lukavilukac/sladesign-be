@@ -15,6 +15,8 @@ return [
 
     'default' => env('MAIL_MAILER', 'smtp'),
 
+    'admin_address' => env('MAIL_ADMIN_ADDRESS', "sladesignns@gmail.com"),
+
     /*
     |--------------------------------------------------------------------------
     | Mailer Configurations
