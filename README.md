@@ -64,3 +64,34 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Application logs
+
+Admins can open `/admin/log-viewer` (locally, `https://webshop.test/admin/log-viewer`)
+from the **Application Logs** navigation link. Both the UI and API use the existing
+`web`, `auth`, and `admin` middleware plus the package's `AuthorizeLogViewer`
+middleware. The `viewLogViewer` gate uses `User::isAdmin()`, including in production.
+File, folder, and bulk deletion are disabled through the package's deletion gates;
+there is no separate privileged role in this application.
+
+Opcodes Log Viewer 3.24.2 supports this application's Laravel 13 / PHP 8.5 runtime.
+Configuration was published using `php artisan vendor:publish --tag=log-viewer-config`.
+Assets were published using `php artisan log-viewer:publish`; Composer's
+`post-autoload-dump` hook republishes them on install/update. Published assets are
+generated and ignored by Git. Although 3.24.2 can serve assets directly, publishing
+is retained per the [installation documentation](https://log-viewer.opcodes.io/docs/3.x/install).
+If deploying with Composer scripts disabled, run `php artisan log-viewer:publish`
+manually. Rebuild the admin frontend with `npm run build` and refresh configuration
+and route caches using your normal deployment process after updating the code.
+
+The viewer includes `storage/logs/*.log` and nested `.log` files, covering both
+`laravel.log` and daily `laravel-YYYY-MM-DD.log` files. The PHP web process needs read
+access to these files and write access to Laravel's configured cache store.
+The existing logging channel remains unchanged (`stack` → `single` by default);
+`daily` remains available with its existing 14-day retention setting.
+
+Run focused access-control, daily-file reading, and deletion protection tests:
+
+```sh
+docker compose -f docker/docker-compose.yml run --rm --no-deps php php artisan test --filter=LogViewerTest
+```

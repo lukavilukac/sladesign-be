@@ -5,6 +5,7 @@ import Success from "@/Components/Notifications/Success.jsx";
 import {
     Bars3Icon,
     CameraIcon,
+    DocumentTextIcon,
     PuzzlePieceIcon,
     ServerIcon,
     ServerStackIcon,
@@ -14,13 +15,14 @@ import {
     XMarkIcon,
 } from '@heroicons/react/24/outline';
 
-const getNavigation = () => [
+const getNavigation = (isAdmin) => [
     { name: 'Orders', uri: '/admin/orders',  href: route('admin.orders.index'), icon: ShoppingCartIcon, current: false },
     { name: 'Table Orders ', uri: '/admin/table-orders',  href: route('admin.tableOrders'), icon: ShoppingCartIcon, current: false },
     { name: 'Products', uri: '/admin/products',  href: route('admin.products.index'), icon: ServerIcon, current: false },
     { name: 'Categories', uri: '/admin/categories', href: route('admin.categories.index'), icon: ServerStackIcon, current: false },
     { name: 'Modifier Groups', uri: '/admin/modifier-groups', href: route('admin.modifier-groups.index'), icon: SwatchIcon, current: false },
-    { name: 'Modifiers', uri: '/admin/modifiers', href: route('admin.modifiers.index'), icon: PuzzlePieceIcon, current: false }
+    { name: 'Modifiers', uri: '/admin/modifiers', href: route('admin.modifiers.index'), icon: PuzzlePieceIcon, current: false },
+    ...(isAdmin ? [{ name: 'Application Logs', uri: '/admin/log-viewer', href: '/admin/log-viewer', icon: DocumentTextIcon, current: false }] : [])
 ]
 const getImages = () => [
     { name: 'Product Images', uri: '/admin/product/images', href: route('admin.images.index', 'product'), icon: CameraIcon, current: false },
@@ -33,7 +35,7 @@ function classNames(...classes) {
 
 const AdminLayout = ({children})=> {
     const { url, props } = usePage();
-    const navigation = getNavigation().map(item => ({ ...item, current: url.startsWith(item.uri) }));
+    const navigation = getNavigation(Boolean(Number(props.auth?.user?.is_admin))).map(item => ({ ...item, current: url.startsWith(item.uri) }));
     const images = getImages().map(item => ({ ...item, current: url.startsWith(item.uri) }));
     const { flash } = props;
     const [sidebarOpen, setSidebarOpen] = useState(false)

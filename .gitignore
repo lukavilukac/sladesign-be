@@ -48,3 +48,5 @@ coverage/
 *.sql
 *.sql.gz
 *.dump
+
+/public/vendor/log-viewer/

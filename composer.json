@@ -12,6 +12,7 @@
         "laravel/framework": "^13.37",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "opcodesio/log-viewer": "^3.24.2",
         "tightenco/ziggy": "^2.6"
     },
     "require-dev": {
@@ -42,7 +43,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan log-viewer:publish --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
