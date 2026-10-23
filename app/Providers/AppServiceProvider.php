@@ -57,6 +57,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app->singleton(\App\Listeners\SendErrorNotification::class);
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Log\Events\MessageLogged::class,
+            [\App\Listeners\SendErrorNotification::class, 'handle'],
+        );
+
         //category service
         $this->app->bind(IApiCategoryServiceInterface::class, function () {
             if (App::getLocale() === 'en') {

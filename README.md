@@ -95,3 +95,25 @@ Run focused access-control, daily-file reading, and deletion protection tests:
 ```sh
 docker compose -f docker/docker-compose.yml run --rm --no-deps php php artisan test --filter=LogViewerTest
 ```
+
+## Error email notifications
+
+Laravel log events at `error`, `critical`, `alert`, or `emergency` send an email to
+`babic.milos22@gmail.com` through the existing default mailer. Reported exceptions
+use their class name as the subject; explicit error logs use the first 180 characters
+of the message. The email includes the environment, timestamp, and a Log Viewer
+search link. Exception messages, stack traces, request data, and log context are not
+copied into exception emails. Do not put secrets into explicit log message titles.
+
+Configure `ERROR_NOTIFICATIONS_ENABLED` (default `true`) and
+`ERROR_NOTIFICATIONS_RECIPIENT` to override these settings. `APP_URL` must be the
+correct public application URL so links work for HTTP requests and CLI jobs alike.
+Use working production `MAIL_*` SMTP settings and refresh the configuration cache
+after changing environment variables. Local Docker overrides SMTP to Mailpit;
+inspect local messages at `http://localhost:8026` rather than in Gmail.
+
+Sending is synchronous and does not require a queue worker. There is no throttling:
+each qualifying log event sends an email. Mail errors are contained and written to
+PHP's error output, without recursive notifications or retries. This cannot notify
+about failures before Laravel boots, failures of the logger itself, or exceptions
+Laravel intentionally does not report (for example validation errors and 404s).
