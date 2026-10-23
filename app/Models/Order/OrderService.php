@@ -51,6 +51,7 @@ class OrderService
      */
     public function createOrder(array $data): void
     {
+        throw new \Exception('Not implemented');
         try {
             $phoneNumber = $data['country_code'] . $data['phone_number'];
             DB::beginTransaction();
