@@ -118,6 +118,25 @@ PHP's error output, without recursive notifications or retries. This cannot noti
 about failures before Laravel boots, failures of the logger itself, or exceptions
 Laravel intentionally does not report (for example validation errors and 404s).
 
+## Public checkout customer lookup
+
+Send `POST /api/customers/lookup` with JSON `{"email":"customer@example.com"}`
+and `Accept: application/json`. Email matching ignores case and surrounding spaces.
+The response is `{"exists":true,"user":{...},"shipping":{...}}`.
+`user` contains only `email`, `first_name`, `last_name`, `phone_number`, `country`,
+`city`, `address`, and `apartment`. `shipping` contains `country`, `city`, `address`,
+`apartment`, `phone_number`, and `postal_code`. Phone numbers are returned as stored,
+including their dialing prefix; postal codes are not currently stored and return null.
+Shipping is the newest shipping row (created_at, then id) linked through any of this
+customer's orders. A customer with no shipping returns `shipping: null`.
+
+Unknown emails, the configured `MAIL_ADMIN_ADDRESS`, and admin accounts all return
+`{"exists":false,"user":null,"shipping":null}` with HTTP 200. Invalid input returns
+422; requests beyond 10 per minute per IP return 429. Responses disable caching.
+This public endpoint intentionally returns customer contact/address data using only
+an email lookup; it does not verify ownership of that email. It sends no mail and
+does not change the customer, shipping, or order audit history.
+
 ## Order audit history
 
 Spatie Activitylog 5.1.3 records order history in `activity_log`. Admins can open

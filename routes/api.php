@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 //});
 
 Route::middleware('api')->group(function () {
+    Route::post('customers/lookup', \App\Http\Controllers\Api\CustomerLookupController::class)
+        ->middleware('throttle:10,1')->name('api.customers.lookup');
     Route::post('orders/create', [\App\Http\Controllers\Api\OrderController::class, 'create'])->middleware(\App\Http\Middleware\TrackOrderAttempt::class);
 
     Route::get('categories', [\App\Http\Controllers\Api\CategoryController::class, 'all']);
