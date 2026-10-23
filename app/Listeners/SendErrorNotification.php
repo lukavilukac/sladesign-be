@@ -25,7 +25,7 @@ class SendErrorNotification
             $title = $exception instanceof Throwable ? $exception::class : (string) $event->message;
             $title = mb_substr(preg_replace('/[\r\n]+/', ' ', $title), 0, 180);
             // Search for the exception class or a literal fragment of the logged message.
-            $query = preg_quote($title, '/');
+            $query = preg_quote($event->context['attempt_id'] ?? $event->context['request_id'] ?? $title, '/');
             $url = rtrim(config('app.url'), '/').'/'.trim(config('log-viewer.route_path'), '/')
                 .'?'.http_build_query(['query' => $query]);
 

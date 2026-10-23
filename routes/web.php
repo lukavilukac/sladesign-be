@@ -62,12 +62,16 @@ Route::middleware(['web', 'auth', 'admin'])->prefix('admin')->name('admin.')->gr
         Route::delete('{id}/delete', [\App\Http\Controllers\Admin\ImageController::class, 'delete'])->name('delete');
         Route::get('all', [\App\Http\Controllers\Admin\ImageController::class, 'all'])->name('all');
     });
+    Route::get('order-attempts', [\App\Http\Controllers\Admin\OrderHistoryController::class, 'attempts'])->name('order-attempts.index');
+    Route::get('order-attempts/{attempt}', [\App\Http\Controllers\Admin\OrderHistoryController::class, 'attempt'])->name('order-attempts.show');
+    Route::get('order-attempts/{attempt}/history', [\App\Http\Controllers\Admin\OrderHistoryController::class, 'attemptHistory'])->name('order-attempts.history');
+    Route::get('orders/{order}/history', [\App\Http\Controllers\Admin\OrderHistoryController::class, 'orderHistory'])->name('orders.history');
     //orders
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('index');
         Route::get('all', [\App\Http\Controllers\Admin\OrderController::class, 'all'])->name('all');
         Route::get('{id}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('show');
-        Route::patch('update-status/{orderId}', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('update-order-status');
+        Route::patch('update-status/{orderId}', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('update-order-status')->middleware(\App\Http\Middleware\TrackOrderChange::class);
     });
     Route::get('table-orders', [\App\Http\Controllers\Admin\OrderController::class, 'tableOrders'])->name('tableOrders');
 });

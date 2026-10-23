@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->scoped(\App\Services\OrderAudit::class);
         $this->app->when(CategoryController::class)
             ->needs(IApiCategoryServiceInterface::class)
             ->give(function ($app) {
@@ -62,6 +63,11 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Log\Events\MessageLogged::class,
             [\App\Listeners\SendErrorNotification::class, 'handle'],
         );
+
+        foreach ([\App\Models\Order\Order::class, \App\Models\OrderLine\OrderLine::class,
+            \App\Models\OrderLine\OrderLineModifier::class, \App\Models\Shipping\Shipping::class, \App\Models\User::class] as $model) {
+            $model::observe(\App\Observers\OrderHistoryObserver::class);
+        }
 
         //category service
         $this->app->bind(IApiCategoryServiceInterface::class, function () {

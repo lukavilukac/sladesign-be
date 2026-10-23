@@ -17,6 +17,7 @@ import {
 
 const getNavigation = (isAdmin) => [
     { name: 'Orders', uri: '/admin/orders',  href: route('admin.orders.index'), icon: ShoppingCartIcon, current: false },
+    { name: 'Order Attempts', uri: '/admin/order-attempts', href: '/admin/order-attempts', icon: DocumentTextIcon, current: false },
     { name: 'Table Orders ', uri: '/admin/table-orders',  href: route('admin.tableOrders'), icon: ShoppingCartIcon, current: false },
     { name: 'Products', uri: '/admin/products',  href: route('admin.products.index'), icon: ServerIcon, current: false },
     { name: 'Categories', uri: '/admin/categories', href: route('admin.categories.index'), icon: ServerStackIcon, current: false },

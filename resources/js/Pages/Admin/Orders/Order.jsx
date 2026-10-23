@@ -1,3 +1,4 @@
+import OrderHistory from '@/Components/OrderHistory.jsx';
 import AdminLayout from "@/Layouts/AdminLayout.jsx";
 import StatusBadge from "@/Components/Core/StatusBadge.jsx";
 import StatusDropdown from "@/Components/Core/StatusDropdown.jsx";
@@ -9,7 +10,7 @@ const address = (order) => {
     return shipTo.country + ', ' + shipTo.city + ', ' + shipTo.address;
 }
 
-const Order = ({order}) => {
+const Order = ({order, attempts = []}) => {
     const [orderStatus, setOrderStatus] = useState(order.order_status_id);
 
     return <AdminLayout>
@@ -76,6 +77,13 @@ const Order = ({order}) => {
             </div>
         </div>
 
+        {attempts.length > 0 && <div className="mt-6 rounded-lg bg-white p-4 shadow-sm">
+            <h2 className="font-semibold">Creation attempts and payloads</h2>
+            {attempts.map(attempt => <a key={attempt.id} href={`/admin/order-attempts/${attempt.id}`} className="mt-2 block break-all text-sm text-indigo-700">
+                {attempt.id} · {attempt.status.replaceAll('_', ' ')}
+            </a>)}
+        </div>}
+        <OrderHistory endpoint={`/admin/orders/${order.id}/history`}/>
     </AdminLayout>
 }
 

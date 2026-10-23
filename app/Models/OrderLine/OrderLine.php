@@ -23,6 +23,6 @@ class OrderLine extends Model
 
     public function modifiers()
     {
-        return $this->belongsToMany(Modifier::class, 'modifier_order_line');
+        return $this->belongsToMany(Modifier::class, 'modifier_order_line')->using(OrderLineModifier::class);
     }
 }

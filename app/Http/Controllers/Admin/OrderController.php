@@ -27,7 +27,12 @@ class OrderController
     {
         $order = $this->orderService->getOrderById($id);
 
-        return Inertia::render('Admin/Orders/Order', ['order' => $order]);
+        abort_unless($order, 404);
+        return Inertia::render('Admin/Orders/Order', [
+            'order' => $order,
+            'attempts' => \App\Models\Order\OrderAttempt::where('order_id', $order->id)
+                ->get(['id', 'status', 'created_at']),
+        ]);
     }
 
     public function tableOrders()
@@ -55,7 +60,7 @@ class OrderController
     public function updateStatus(Request $request, $orderId)
     {
         $data = $request->validate([
-            'order_status_id' => 'required',
+            'order_status_id' => 'required|integer|exists:order_statuses,id',
             'redirectRoute' => 'nullable'
         ]);
 
