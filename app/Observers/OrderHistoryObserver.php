@@ -19,6 +19,10 @@ class OrderHistoryObserver
 
     public function updated(Model $model): void
     {
+        if ($model instanceof User) {
+            return;
+        }
+
         $this->record($model, 'updated');
     }
 

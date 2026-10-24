@@ -347,7 +347,7 @@ class OrderAuditTest extends TestCase
         $this->assertSame(1, Activity::where('event', 'change_failed')->count());
     }
 
-    public function test_shared_customer_and_shipping_changes_are_recorded_for_each_affected_order(): void
+    public function test_customer_changes_are_not_logged_but_shared_shipping_changes_are_recorded_for_each_order(): void
     {
         $first = $this->createOrder();
         $second = $this->createOrder();
@@ -356,11 +356,11 @@ class OrderAuditTest extends TestCase
         $first->user->update(['first_name' => 'Renamed']);
         $first->shipping->update(['city' => 'Novi Sad']);
         foreach ([$first, $second] as $order) {
-            $this->assertDatabaseHas('activity_log', ['order_id' => $order->id, 'event' => 'user.updated', 'causer_id' => $admin->id]);
+            $this->assertDatabaseMissing('activity_log', ['order_id' => $order->id, 'event' => 'user.updated']);
             $this->assertDatabaseHas('activity_log', ['order_id' => $order->id, 'event' => 'shipping.updated', 'causer_id' => $admin->id]);
         }
         $first->user->update(['password' => bcrypt('new-password')]);
-        $this->assertSame(2, Activity::where('event', 'user.updated')->count());
+        $this->assertSame(0, Activity::where('event', 'user.updated')->count());
     }
 
     public function test_actor_snapshot_and_audit_survive_order_and_actor_deletion(): void
