@@ -26,6 +26,7 @@ class CreateOrderRequest extends FormRequest
             'first_name' => 'required|string|min:2|max:255',
             'last_name' => 'required|string|min:2|max:255',
             'city' => 'required|string|min:2|max:255',
+            'postal_code' => 'nullable|string|max:255',
             'country_name' => 'required|string',
             'country_code' => 'required|string',
             'phone_number' => 'required',

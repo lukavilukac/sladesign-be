@@ -88,6 +88,74 @@ class OrderAuditTest extends TestCase
         $this->assertNull(app(OrderAudit::class)->attempt);
     }
 
+    public function test_postal_code_is_preserved_in_shipping_lookup_and_audit_without_changing_previous_orders(): void
+    {
+        $payload = $this->payload();
+        $payload['postal_code'] = '00123';
+        $this->postJson('/api/orders/create', $payload)->assertCreated();
+        $first = Order::latest('id')->firstOrFail();
+        $this->assertSame('00123', $first->shipping->postal_code);
+        $attempt = OrderAttempt::firstOrFail();
+        $this->assertSame('00123', $attempt->payload['postal_code']);
+        $this->assertSame('00123', $attempt->validated_payload['postal_code']);
+        $this->assertSame('00123', Activity::where('event', 'shipping_prepared')->firstOrFail()->properties['shipping']['postal_code']);
+
+        $this->postJson('/api/orders/create', $payload)->assertCreated();
+        $this->assertEquals($first->shipping_id, Order::latest('id')->firstOrFail()->shipping_id);
+
+        $payload['postal_code'] = '00456';
+        $this->postJson('/api/orders/create', $payload)->assertCreated();
+        $second = Order::latest('id')->firstOrFail();
+        $this->assertNotEquals($first->shipping_id, $second->shipping_id);
+        $this->assertSame('00123', $first->fresh()->shipping->postal_code);
+        $this->assertSame('00456', $second->shipping->postal_code);
+        $this->postJson('/api/customers/lookup', ['email' => $payload['email_address']])->assertOk()
+            ->assertJsonPath('shipping.postal_code', '00456');
+    }
+
+    public function test_omitted_and_null_postal_codes_use_the_same_shipping_and_lookup_returns_null(): void
+    {
+        $payload = $this->payload();
+        $this->postJson('/api/orders/create', $payload)->assertCreated();
+        $first = Order::latest('id')->firstOrFail();
+        $this->assertNull($first->shipping->postal_code);
+        $payload['postal_code'] = null;
+        $this->postJson('/api/orders/create', $payload)->assertCreated();
+        $this->assertEquals($first->shipping_id, Order::latest('id')->firstOrFail()->shipping_id);
+        $this->postJson('/api/customers/lookup', ['email' => $payload['email_address']])->assertOk()
+            ->assertJsonPath('shipping.postal_code', null);
+    }
+
+    public static function invalidPostalCodes(): array
+    {
+        return [[12345], [true], [['00123']], [str_repeat('a', 256)]];
+    }
+
+    #[DataProvider('invalidPostalCodes')]
+    public function test_invalid_postal_codes_are_rejected_without_creating_orders(mixed $postalCode): void
+    {
+        $payload = $this->payload();
+        $payload['postal_code'] = $postalCode;
+        $this->postJson('/api/orders/create', $payload)->assertUnprocessable()->assertJsonValidationErrors('postal_code');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('shippings', 0);
+        Mail::assertNothingSent();
+    }
+
+    public function test_postal_code_migration_can_be_rolled_back_and_reapplied_preserving_shipping(): void
+    {
+        $order = $this->createOrder();
+        $path = ['--path' => ['database/migrations/2026_10_24_120000_add_postal_code_to_shippings_table.php']];
+        $this->artisan('migrate:rollback', $path)->assertExitCode(0);
+        $this->assertFalse(Schema::hasColumn('shippings', 'postal_code'));
+        $this->assertDatabaseHas('shippings', ['id' => $order->shipping_id]);
+        $this->artisan('migrate', $path)->assertExitCode(0);
+        $this->assertTrue(Schema::hasColumn('shippings', 'postal_code'));
+        $this->assertNull($order->fresh()->shipping->postal_code);
+        $order->shipping->update(['postal_code' => '00123']);
+        $this->assertSame('00123', $order->fresh()->shipping->postal_code);
+    }
+
     public function test_missing_admin_recipient_keeps_order_and_sends_customer_confirmation(): void
     {
         config(['mail.admin_address' => null]);
@@ -383,7 +451,10 @@ class OrderAuditTest extends TestCase
 
     public function test_new_migrations_can_be_rolled_back_and_reapplied(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 2])->assertExitCode(0);
+        $this->artisan('migrate:rollback', ['--path' => [
+            'database/migrations/2026_10_23_120000_create_order_attempts_table.php',
+            'database/migrations/2026_10_23_112211_create_activity_log_table.php',
+        ]])->assertExitCode(0);
         $this->assertFalse(Schema::hasTable('order_attempts'));
         $this->assertFalse(Schema::hasTable('activity_log'));
         $this->artisan('migrate')->assertExitCode(0);

@@ -69,7 +69,7 @@ class OrderService
                     $audit->record('customer_prepared', properties: ['customer_id' => $user->id]);
 
                     $phase = 'shipping';
-                    $shipping = $this->upsertShipping($data['country_name'], $data['city'], $data['address'], $phoneNumber, $data['apartment']);
+                    $shipping = $this->upsertShipping($data['country_name'], $data['city'], $data['address'], $phoneNumber, $data['apartment'], $data['postal_code'] ?? null);
                     $completed[] = $phase;
                     $audit->record('shipping_prepared', properties: ['shipping' => $shipping->getAttributes()]);
 
@@ -177,9 +177,10 @@ class OrderService
         );
     }
 
-    public function upsertShipping(string $country, string $city, string $address, string $phoneNumber, ?string $apartment): Model
+    public function upsertShipping(string $country, string $city, string $address, string $phoneNumber, ?string $apartment, ?string $postalCode = null): Model
     {
-        return Shipping::query()->updateOrCreate([ // maybe optimize this one
+        return Shipping::query()->firstOrCreate([
+            'postal_code' => $postalCode,
             'country' => $country,
             'city' => $city,
             'address' => $address,

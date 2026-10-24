@@ -27,10 +27,7 @@ class CustomerLookupController
             'exists' => $user !== null,
             'user' => $user ? $user->only(['email', 'first_name', 'last_name', 'phone_number',
                 'country', 'city', 'address', 'apartment']) : null,
-            'shipping' => $shipping ? array_merge(
-                $shipping->only(['country', 'city', 'address', 'apartment', 'phone_number']),
-                ['postal_code' => null],
-            ) : null,
+            'shipping' => $shipping?->only(['country', 'city', 'address', 'apartment', 'phone_number', 'postal_code']),
         ])->header('Cache-Control', 'no-store, private');
     }
 }

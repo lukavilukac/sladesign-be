@@ -18,7 +18,7 @@ class OrderAudit
     {
         // Only business fields are persisted, including invalid values for troubleshooting.
         $payload = Arr::only($data, ['checkout_id', 'email_address', 'first_name', 'last_name',
-            'country_name', 'country_code', 'city', 'address', 'phone_number', 'apartment',
+            'country_name', 'country_code', 'city', 'address', 'phone_number', 'apartment', 'postal_code',
             'price', 'order_lines', 'order_status_id']);
         if (isset($payload['order_lines']) && is_array($payload['order_lines'])) {
             $payload['order_lines'] = array_map(fn ($line) => is_array($line)

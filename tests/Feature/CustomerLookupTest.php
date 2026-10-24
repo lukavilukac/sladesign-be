@@ -17,6 +17,7 @@ class CustomerLookupTest extends TestCase
         $user = User::factory()->create(['email' => 'Customer@example.com']);
         $old = $this->shippingFor($user, 'Old address');
         $latest = $this->shippingFor($user, 'Latest address');
+        $latest->update(['postal_code' => '00123']);
         // Reusing an older shipping record does not make it the newest shipping record.
         $this->orderFor($user, $old);
         $this->shippingFor(User::factory()->create(), 'Other customer address');
@@ -24,11 +25,11 @@ class CustomerLookupTest extends TestCase
         $response = $this->postJson('/api/customers/lookup', ['email' => ' CUSTOMER@example.com '])
             ->assertOk()->assertJsonPath('exists', true)
             ->assertJsonPath('shipping.address', $latest->address)
-            ->assertJsonPath('shipping.postal_code', null)
+            ->assertJsonPath('shipping.postal_code', '00123')
             ->assertExactJson([
                 'exists' => true,
                 'user' => $user->only(['email', 'first_name', 'last_name', 'phone_number', 'country', 'city', 'address', 'apartment']),
-                'shipping' => array_merge($latest->only(['country', 'city', 'address', 'apartment', 'phone_number']), ['postal_code' => null]),
+                'shipping' => $latest->only(['country', 'city', 'address', 'apartment', 'phone_number', 'postal_code']),
             ]);
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
     }
